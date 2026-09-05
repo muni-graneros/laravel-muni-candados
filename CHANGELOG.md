@@ -4,6 +4,21 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
+_Nada todavía._
+
+## [0.2.0] - 2026-09-05
+
+### Agregado
+
+- `guardaDeCredencialesDePlantilla`: comprueba que el sistema requiera
+  `laravel-muni-shared` y no le apague el auto-descubrimiento a su proveedor,
+  que es lo único que puede dejar sin enganchar la guarda que aborta el arranque
+  en producción con las credenciales del `.env.example`. Va en `todos()`: la
+  regla es del ecosistema entero. Exige `muni-shared` ≥ 1.19.0, que es donde
+  vive la guarda.
+
+## [0.1.0] - 2026-09-05
+
 ### Agregado
 
 - Seis candados heredables, con `Candados::todos()` como adopción de una línea y
