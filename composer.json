@@ -1,0 +1,56 @@
+{
+    "name": "muni-graneros/laravel-muni-candados",
+    "description": "Los candados del ecosistema municipal de Graneros como tests heredables: las reglas que todo sistema tiene que cumplir, escritas una sola vez.",
+    "type": "library",
+    "license": "proprietary",
+    "keywords": [
+        "laravel",
+        "pest",
+        "graneros",
+        "municipal"
+    ],
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0",
+        "pestphp/pest": "^4.0"
+    },
+    "require-dev": {
+        "filament/filament": "^5.0",
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^11.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "suggest": {
+        "filament/filament": "Para que el candado de la cookie de recordar encuentre solo la URL del panel y la de acceso; sin Filament se pasan como parámetros."
+    },
+    "autoload": {
+        "psr-4": {
+            "Muni\\Candados\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Muni\\Candados\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "stan": "phpstan analyse --memory-limit=1G",
+        "post-install-cmd": [
+            "git config core.hooksPath .githooks || true"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Suite del paquete: cada candado contra una fixture que cumple y otra que no.",
+        "stan": "PHPStan nivel 8 sobre src/, sin baseline."
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

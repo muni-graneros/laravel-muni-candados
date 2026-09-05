@@ -1,0 +1,61 @@
+name: CI
+
+# El paquete es una librería que solo corre dentro de la suite de otro sistema:
+# no hay superficie HTTP propia que atacar. Lo que sí protege a quien lo instala
+# es esto — que su propia suite pase (cada candado contra una fixture que cumple
+# y otra que no), que el análisis estático esté limpio, que el formato sea el
+# del ecosistema y que sus dependencias no arrastren avisos de seguridad.
+
+on:
+  workflow_dispatch:
+  # `develop` TAMBIÉN, no solo `main`. El trabajo diario de este ecosistema va a
+  # develop; un CI que solo mira la rama a la que ya llegó todo avisa tarde.
+  push:
+    branches: [main, develop]
+  pull_request:
+  schedule:
+    # Semanal: un aviso de seguridad puede aparecer sin que nadie toque el código.
+    - cron: '0 4 * * 1'
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    name: Pest + PHPStan + Pint + audit
+    runs-on: ubuntu-latest
+
+    # Se prueba en las versiones donde de verdad corre: 8.4 es el mínimo que
+    # declara composer.json y 8.5 la que ya usan varios sistemas del ecosistema.
+    # Dejar de probar el mínimo convertiría ese `^8.4` en una promesa sin respaldo.
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4', '8.5']
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Formato (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Análisis estático (PHPStan nivel 8, sin baseline)
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      # Bloquea a propósito: un escaneo que no detiene nada no se lee.
+      - name: Auditoría de dependencias
+        run: composer audit --format=plain
+
+      - name: Pest
+        run: ./vendor/bin/pest

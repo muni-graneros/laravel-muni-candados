@@ -1,0 +1,11 @@
+# Lo que NO viaja en el paquete instalado. Un `composer require` no tiene por qué
+# bajarse la suite ni la configuración de las herramientas: solo `src/`.
+/.github            export-ignore
+/.githooks          export-ignore
+/tests              export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/Makefile           export-ignore
+/phpstan.neon       export-ignore
+/phpunit.xml        export-ignore
+/pint.json          export-ignore

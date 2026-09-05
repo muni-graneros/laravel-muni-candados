@@ -1,0 +1,11 @@
+# Casi bien: versión fijada, forma shell, curl instalado... pero el chequeo es
+# el heredado de la imagen base, contra localhost:2019/metrics, que responde
+# 200 mientras Caddy esté vivo aunque Octane no atienda ni una petición.
+FROM dunglas/frankenphp:1.12.7-php8.5-alpine
+
+RUN apk add --no-cache curl icu-libs
+
+COPY . /app
+
+HEALTHCHECK --interval=30s \
+    CMD curl -f http://localhost:2019/metrics || exit 1
