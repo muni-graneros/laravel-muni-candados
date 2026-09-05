@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Muni\Candados\Candados\CookieDeRecordarInerte;
 use Muni\Candados\Candados\ErroresNoSalenDelPais;
+use Muni\Candados\Candados\GuardaDeCredencialesDePlantilla;
 use Muni\Candados\Candados\ImagenDeProduccion;
 use Muni\Candados\Candados\NadieEmiteCookieDeRecordar;
 use Muni\Candados\Candados\ProxiesDeConfianza;
@@ -42,6 +43,7 @@ final class Candados
         self::proxiesDeConfianza();
         self::nadieEmiteCookieDeRecordar();
         self::cookieDeRecordarInerte();
+        self::guardaDeCredencialesDePlantilla();
     }
 
     /**
@@ -147,5 +149,17 @@ final class Candados
             $configuracion,
             $portada,
         ))->registrar();
+    }
+
+    /**
+     * El sistema requiere `laravel-muni-shared` y no le apaga el auto-descubrimiento a su
+     * proveedor: solo así queda enganchada la guarda de credenciales de plantilla que ese
+     * paquete engancha sola en su `boot()`.
+     *
+     * @param  string|null  $composerJson  por omisión `composer.json` en la raíz
+     */
+    public static function guardaDeCredencialesDePlantilla(?string $composerJson = null): void
+    {
+        (new GuardaDeCredencialesDePlantilla($composerJson))->registrar();
     }
 }

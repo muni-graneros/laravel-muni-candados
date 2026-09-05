@@ -1,0 +1,14 @@
+{
+    "name": "muni-graneros/sistema-con-descubrimiento-apagado",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0",
+        "muni-graneros/laravel-muni-shared": "^1.18"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": ["*"]
+        }
+    }
+}

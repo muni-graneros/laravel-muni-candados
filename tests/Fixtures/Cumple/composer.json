@@ -1,0 +1,17 @@
+{
+    "name": "muni-graneros/sistema-de-mentira",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0",
+        "muni-graneros/laravel-muni-shared": "^1.18"
+    },
+    "require-dev": {
+        "muni-graneros/laravel-muni-candados": "^0.1"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    }
+}

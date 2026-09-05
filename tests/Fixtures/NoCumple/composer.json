@@ -1,0 +1,8 @@
+{
+    "name": "muni-graneros/sistema-recien-instalado",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0"
+    }
+}

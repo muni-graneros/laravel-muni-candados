@@ -1,0 +1,14 @@
+{
+    "name": "muni-graneros/sistema-con-el-paquete-excluido",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0",
+        "muni-graneros/laravel-muni-shared": "^1.18"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": ["muni-graneros/laravel-muni-shared"]
+        }
+    }
+}
