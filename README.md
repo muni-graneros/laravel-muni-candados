@@ -18,17 +18,21 @@ paquete la regla vive una vez y cada sistema la hereda con una línea.
 
 ## Cómo se adopta
 
-> **Todavía no está publicado.** Los tres paquetes compartidos del ecosistema
-> tienen tags locales sin publicar y los sistemas ya piden versiones que no
-> existen; sumar otro antes de arreglar el flujo de publicación fabrica el
-> mismo problema. Esta sección queda lista para cuando se publique.
+> Publicado el 05-09-2026 como `v0.1.0` en
+> `git@github-graneros:muni-graneros/laravel-muni-candados.git`. El repositorio
+> es privado, así que la entrada `vcs` va con `"no-api": true`: sin eso Composer
+> resuelve por la API de GitHub y pide un token personal.
 
 En el `composer.json` del sistema:
 
 ```json
 {
     "repositories": [
-        { "type": "vcs", "url": "git@github-graneros:muni-graneros/laravel-muni-candados.git" }
+        {
+            "type": "vcs",
+            "url": "git@github-graneros:muni-graneros/laravel-muni-candados.git",
+            "no-api": true
+        }
     ]
 }
 ```
