@@ -13,6 +13,7 @@ use Muni\Candados\Candados\HigieneDeLaEtapaDeAssets;
 use Muni\Candados\Candados\ImagenDeProduccion;
 use Muni\Candados\Candados\NadieEmiteCookieDeRecordar;
 use Muni\Candados\Candados\ProxiesDeConfianza;
+use Muni\Candados\Candados\PwaSinRestosDelScaffold;
 use Muni\Candados\Candados\SeedersSinCredencialesEnProduccion;
 
 /**
@@ -45,6 +46,18 @@ final class Candados
         self::nadieEmiteCookieDeRecordar();
         self::cookieDeRecordarInerte();
         self::guardaDeCredencialesDePlantilla();
+        self::pwaSinRestosDelScaffold();
+    }
+
+    /**
+     * No queda ningún service worker ni manifest servido que nadie registre.
+     *
+     * @param  string|null  $publico  por omisión `public`
+     * @param  string|null  $vistas  por omisión `resources/views`
+     */
+    public static function pwaSinRestosDelScaffold(?string $publico = null, ?string $vistas = null): void
+    {
+        (new PwaSinRestosDelScaffold($publico, $vistas))->registrar();
     }
 
     /**

@@ -4,7 +4,16 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
-_Nada todavía._
+### Agregado
+
+- `pwaSinRestosDelScaffold`: ningún `public/sw*.js` ni `public/manifest*.webmanifest`
+  se sirve si ninguna vista lo registra o lo enlaza, y todo worker que una vista
+  registre existe de verdad. Cierra la «PWA fantasma» que el scaffold repartió en ocho
+  repos: un service worker que cachea toda respuesta GET con estado 200, sin mirar la
+  ruta ni la autenticación. Mientras nadie lo registra es inerte —por eso sobrevivió
+  sin que nadie lo notara—, pero basta copiar dos líneas de `serviceWorker.register`
+  de otro sistema para que el panel entero empiece a escribirse en el disco del equipo,
+  donde queda tras cerrar sesión. En `personas-graneros` eso ya había pasado de verdad.
 
 ## [0.3.0] - 2026-09-06
 
