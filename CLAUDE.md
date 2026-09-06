@@ -12,7 +12,12 @@ recordar"), escrita una sola vez en vez de copiada byte a byte en 6-8 repos.
 Candados actuales en `src/Candados/`: `ErroresNoSalenDelPais`,
 `ProxiesDeConfianza`, `CookieDeRecordarInerte`,
 `SeedersSinCredencialesEnProduccion`, `NadieEmiteCookieDeRecordar`,
-`ImagenDeProduccion`, `GuardaDeCredencialesDePlantilla`.
+`ImagenDeProduccion`, `GuardaDeCredencialesDePlantilla`,
+`PwaSinRestosDelScaffold`, `HigieneDeLaEtapaDeAssets`,
+`SinCdnDeFuentesNiIconos`. Los últimos dos —`HigieneDeLaEtapaDeAssets` y
+`SinCdnDeFuentesNiIconos`— NO están en `Candados::todos()` todavía: la
+adopción real en los sistemas del ecosistema no llegó al 100% cuando se
+promovieron, y se registran a mano hasta que estén en los nueve.
 
 ## Qué NO es
 

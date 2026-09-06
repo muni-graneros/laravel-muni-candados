@@ -15,6 +15,7 @@ use Muni\Candados\Candados\NadieEmiteCookieDeRecordar;
 use Muni\Candados\Candados\ProxiesDeConfianza;
 use Muni\Candados\Candados\PwaSinRestosDelScaffold;
 use Muni\Candados\Candados\SeedersSinCredencialesEnProduccion;
+use Muni\Candados\Candados\SinCdnDeFuentesNiIconos;
 
 /**
  * La puerta de entrada: un método por candado y `todos()` para el caso común.
@@ -207,5 +208,27 @@ final class Candados
             $soloDeEscritorio,
             $entradasJs,
         ))->registrar();
+    }
+
+    /**
+     * Ni la tipografía del panel, ni su CSP, ni ningún archivo de `resources/`
+     * le piden una fuente o un icono a un CDN de terceros.
+     *
+     * **No está en `todos()` todavía, a propósito.** Nació (06-09) del mismo
+     * hallazgo arreglado ya en seis sistemas (feria, rrhh, seguridad,
+     * discapacidad, control-acceso, licencias) pero copiado seis veces: hasta
+     * que los nueve sistemas del ecosistema lo tengan, cada uno lo registra a
+     * mano. Cuando estén todos, se mueve a `todos()` y esto se borra.
+     *
+     * @param  string|null  $idDelPanel  por omisión, el panel actual o el que declaró `->default()`
+     * @param  string|null  $ruta  la que se pide para leer la CSP; por omisión, la de acceso del panel
+     * @param  string|null  $recursos  por omisión `resources/`
+     */
+    public static function sinCdnDeFuentesNiIconos(
+        ?string $idDelPanel = null,
+        ?string $ruta = null,
+        ?string $recursos = null,
+    ): void {
+        (new SinCdnDeFuentesNiIconos($idDelPanel, $ruta, $recursos))->registrar();
     }
 }

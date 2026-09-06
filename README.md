@@ -108,6 +108,58 @@ pueden registrar desde `tests/Unit`, sin arrancar Laravel, pasándoles las rutas
 
 El porqué largo está en el docblock de cada clase en `src/Candados/`.
 
+### `sinCdnDeFuentesNiIconos` y el gotcha de `->font()` con Octane
+
+**No está en `todos()` todavía** (ver el docblock de `Candados::sinCdnDeFuentesNiIconos()`):
+solo seis de los nueve sistemas del ecosistema tienen el arreglo, y meterlo en
+`todos()` antes pondría el resto en rojo de golpe. Se registra a mano:
+
+```php
+Candados::sinCdnDeFuentesNiIconos();
+```
+
+Comprueba tres cosas: que el panel resuelva su tipografía con
+`Filament\FontProviders\LocalFontProvider` y no con `BunnyFontProvider`; que
+la CSP no nombre `fonts.bunny.net`, `fonts.googleapis.com`,
+`fonts.gstatic.com` ni `cdnjs.cloudflare.com`; y que ningún archivo de
+`resources/` los cargue de verdad (una mención en un comentario que explica
+que ya no se usa no cuenta — solo cuenta una URL con esquema o
+protocolo-relativa, como la que arma un `<link>`, un `@import` o un
+`<script src>`).
+
+`->font('Inter')` —o cualquier familia— sin el argumento `provider:` hace que
+Filament resuelva con `BunnyFontProvider`: cada carga del panel le pide la
+tipografía a `fonts.bunny.net` y le entrega la IP de cada funcionario a un
+tercero (Ley 21.719). Hay dos arreglos legítimos, y los dos pasan el candado:
+
+- **La familia es Inter**: se borra la línea `->font()`. Filament ya sirve
+  «Inter Variable» self-hosted y sin la llamada resuelve `LocalFontProvider`
+  solo. Así quedó en rrhh, seguridad, discapacidad, control-acceso y web.
+- **La familia no viene con Filament** (IBM Plex Sans, en feria-graneros): se
+  self-hostea con `@fontsource` y se pasa `provider: LocalFontProvider::class`
+  explícito.
+
+**Gotcha de Octane, solo en el segundo caso**: el `url:` de `->font()` tiene
+que ir como **Closure, no como string ya resuelto**:
+
+```php
+->font(
+    'IBM Plex Sans',
+    url: fn (): string => app(\Illuminate\Foundation\Vite::class)->asset('resources/css/panel-fuente.css'),
+    provider: \Filament\FontProviders\LocalFontProvider::class,
+)
+```
+
+Con Octane el worker vive entre peticiones: `PanelProvider::panel()` corre
+UNA vez al arrancar el worker, no en cada request. Si `url:` se resolviera ahí
+como string, `app(Vite::class)->asset()` armaría la URL con el host de esa
+PRIMERA petición —horneado para siempre—, y todas las peticiones siguientes
+la recibirían igual. Con el contenedor expuesto en un puerto y `APP_URL`
+apuntando a otro puerto interno, eso pedía la hoja de estilos al puerto
+equivocado. Como Closure, Filament la evalúa en cada petición y arma la URL
+con el host de ESA petición. El candado no puede comprobar esto —es una
+propiedad de runtime, no de forma—, así que queda documentado acá.
+
 ## Cuando un candado falla
 
 El mensaje dice qué regla se rompió y dónde (el archivo, la etiqueta, el DSN).

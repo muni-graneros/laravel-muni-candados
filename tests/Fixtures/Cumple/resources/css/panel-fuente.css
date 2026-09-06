@@ -1,0 +1,8 @@
+/*
+ * Fixture de texto: tipografía del panel, self-hosted (antes se pedía a
+ * fonts.bunny.net en cada carga). Este comentario nombra el host viejo sin
+ * esquema, a propósito: no es una URL de verdad, y el candado
+ * SinCdnDeFuentesNiIconos no tiene que confundirla con una.
+ */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/600.css';

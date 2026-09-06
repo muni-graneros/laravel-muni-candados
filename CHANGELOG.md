@@ -6,6 +6,33 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ### Agregado
 
+- `sinCdnDeFuentesNiIconos`: el panel Filament resuelve su tipografía con
+  `LocalFontProvider` y no con `BunnyFontProvider`; la CSP no nombra
+  `fonts.bunny.net`, `fonts.googleapis.com`, `fonts.gstatic.com` ni
+  `cdnjs.cloudflare.com`; y ningún archivo de `resources/` los carga de
+  verdad (una mención en un comentario que explica que ya no se usa no
+  cuenta). Generaliza el candado que se copió, byte a byte, en seis sistemas
+  (`feria`, `rrhh`, `seguridad`, `discapacidad`, `control-acceso`,
+  `licencias`) tras descubrirse que `->font('Inter')` sin `provider:` hace
+  que Filament pida la tipografía a `fonts.bunny.net` en cada carga del
+  panel —la IP de cada funcionario a un tercero, Ley 21.719— y deja el panel
+  sin tipografía en la LAN municipal filtrada. Dos arreglos legítimos pasan
+  el candado: borrar la línea `->font()` cuando la familia es Inter (Filament
+  ya la sirve self-hosted), o self-hostear con `@fontsource` y pasar
+  `provider: LocalFontProvider::class` cuando no lo es (IBM Plex Sans, en
+  feria-graneros). El gotcha de Octane sobre el `url:` de ese segundo caso
+  —tiene que ir como Closure, no como string ya resuelto, o el worker
+  hornea el host de la primera petición para todas las que siguen— queda
+  documentado en el README: un test de forma no lo puede comprobar.
+
+### Qué NO hace todavía
+
+- **No está en `Candados::todos()`.** El día que se promovió, de los nueve
+  sistemas del ecosistema solo seis tenían el arreglo real; meterlo en
+  `todos()` habría puesto tres suites en rojo de golpe. Cada sistema lo
+  registra a mano; cuando los nueve estén, se mueve a `todos()` y esta nota
+  se borra.
+
 - `pwaSinRestosDelScaffold`: ningún `public/sw*.js` ni `public/manifest*.webmanifest`
   se sirve si ninguna vista lo registra o lo enlaza, y todo worker que una vista
   registre existe de verdad. Cierra la «PWA fantasma» que el scaffold repartió en ocho
