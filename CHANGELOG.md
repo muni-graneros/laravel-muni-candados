@@ -6,6 +6,16 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 _Nada todavía._
 
+## [0.2.1] - 2026-09-05
+
+### Corregido
+
+- `guardaDeCredencialesDePlantilla` pasaba con `muni-shared` 1.18 instalado, donde
+  la guarda **no existe**: miraba solo el `composer.json`, que promete pero no
+  instala. Ahora lee `vendor/composer/installed.json` y exige 1.19.0 o superior.
+  Un candado que pasa cuando lo que vigila no existe da por cubierto lo que está
+  descubierto, que es peor que no tenerlo.
+
 ## [0.2.0] - 2026-09-05
 
 ### Agregado

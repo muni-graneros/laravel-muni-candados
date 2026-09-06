@@ -1,0 +1,10 @@
+{
+    "packages": [
+        {
+            "name": "muni-graneros/laravel-muni-shared",
+            "version": "v1.18.0",
+            "version_normalized": "1.18.0.0"
+        }
+    ],
+    "dev": true
+}

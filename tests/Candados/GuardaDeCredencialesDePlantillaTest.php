@@ -15,6 +15,17 @@ it('pasa cuando el sistema requiere el paquete y no le apaga el descubrimiento',
     $cumple->elProveedorNoEstaExcluidoDelDescubrimiento();
 });
 
+it('pasa cuando la versión instalada del paquete ya trae la guarda', function () use ($cumple): void {
+    $cumple->laGuardaEstaInstalada();
+});
+
+it('detecta el sistema que promete el paquete pero tiene instalada una versión sin la guarda', function () use ($noCumple): void {
+    // El caso que motivó esta comprobación: `composer.json` con `^1.18` pasa las
+    // otras dos y la guarda no existe, porque nace en la 1.19.0.
+    expect(fn () => $noCumple->laGuardaEstaInstalada())
+        ->toThrow(AssertionFailedError::class, 'está instalada la versión 1.18.0');
+});
+
 it('detecta el sistema que nunca requirió el paquete de la guarda', function () use ($noCumple): void {
     expect(fn () => $noCumple->elPaqueteEstaRequerido())
         ->toThrow(AssertionFailedError::class, 'el composer.json no requiere muni-graneros/laravel-muni-shared');

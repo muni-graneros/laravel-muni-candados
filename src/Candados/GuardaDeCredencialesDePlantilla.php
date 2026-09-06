@@ -29,6 +29,8 @@ final class GuardaDeCredencialesDePlantilla extends Candado
 
     private const string PROVEEDOR = 'Muni\\Shared\\MuniSharedServiceProvider';
 
+    private const string PRIMERA_CON_GUARDA = '1.19.0';
+
     public function __construct(private readonly ?string $composerJson = null) {}
 
     public function registrar(): void
@@ -42,6 +44,64 @@ final class GuardaDeCredencialesDePlantilla extends Candado
         it('el sistema no le apaga el auto-descubrimiento al proveedor que engancha la guarda', function () use ($candado): void {
             $candado->elProveedorNoEstaExcluidoDelDescubrimiento();
         });
+
+        it('la guarda existe de verdad en el vendor instalado', function () use ($candado): void {
+            $candado->laGuardaEstaInstalada();
+        });
+    }
+
+    /**
+     * Qué versión está INSTALADA, no cuál promete el `composer.json`.
+     *
+     * Las dos comprobaciones de arriba miran el `composer.json`, y con eso solo no
+     * alcanza: un sistema con `muni-shared: ^1.18` las pasa las dos y NO tiene la
+     * guarda, porque nació en 1.19. Un candado que pasa cuando lo que vigila no
+     * existe es peor que no tenerlo: da por cubierto lo que está descubierto.
+     *
+     * Se lee `vendor/composer/installed.json` —lo que Composer realmente puso—
+     * y no `class_exists()`, por dos razones: el `composer.json` puede pedir
+     * `^1.18` y tener 1.19 instalado (o al revés, con el lock atrasado), y una
+     * comprobación de clase cargada depende de qué autoload corrió antes en el
+     * proceso. El archivo es el hecho.
+     */
+    public function laGuardaEstaInstalada(): void
+    {
+        $instalado = $this->composerJson === null
+            ? $this->ruta('vendor/composer/installed.json')
+            : dirname($this->composerJson).'/vendor/composer/installed.json';
+
+        $contenido = $this->contenidoDe($instalado, 'el vendor/composer/installed.json');
+
+        $decodificado = json_decode($contenido, true);
+
+        if (! is_array($decodificado)) {
+            Assert::fail('el vendor/composer/installed.json no es JSON válido');
+        }
+
+        /** @var list<array{name?: string, version?: string}> $paquetes */
+        $paquetes = $decodificado['packages'] ?? $decodificado;
+
+        $version = null;
+
+        foreach ($paquetes as $paquete) {
+            if (($paquete['name'] ?? null) === self::PAQUETE) {
+                $version = ltrim((string) ($paquete['version'] ?? ''), 'v');
+                break;
+            }
+        }
+
+        Assert::assertNotNull(
+            $version,
+            self::PAQUETE.' no aparece en vendor/composer/installed.json: el composer.json lo '
+            .'requiere pero no está instalado, así que la guarda de credenciales de plantilla no existe'
+        );
+
+        Assert::assertTrue(
+            version_compare($version, self::PRIMERA_CON_GUARDA, '>='),
+            'está instalada la versión '.$version.' de '.self::PAQUETE.', y la guarda de credenciales '
+            .'de plantilla nace en la '.self::PRIMERA_CON_GUARDA.'. Subí el paquete: hasta entonces el '
+            .'sistema arranca en producción con la contraseña del .env.example y nada avisa'
+        );
     }
 
     public function elPaqueteEstaRequerido(): void
