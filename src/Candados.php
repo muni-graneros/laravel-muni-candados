@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Muni\Candados\Candados\CookieDeRecordarInerte;
 use Muni\Candados\Candados\ErroresNoSalenDelPais;
 use Muni\Candados\Candados\GuardaDeCredencialesDePlantilla;
+use Muni\Candados\Candados\HigieneDeLaEtapaDeAssets;
 use Muni\Candados\Candados\ImagenDeProduccion;
 use Muni\Candados\Candados\NadieEmiteCookieDeRecordar;
 use Muni\Candados\Candados\ProxiesDeConfianza;
@@ -161,5 +162,37 @@ final class Candados
     public static function guardaDeCredencialesDePlantilla(?string $composerJson = null): void
     {
         (new GuardaDeCredencialesDePlantilla($composerJson))->registrar();
+    }
+
+    /**
+     * La etapa Node del Dockerfile no instala devDependencies ni ejecuta los
+     * `postinstall` de terceros dentro de la imagen de producción.
+     *
+     * **No está en `todos()` todavía, a propósito.** Cuando se promovió (06-09)
+     * lo cumplía uno solo de los ocho sistemas: meterlo en `todos()` habría
+     * puesto en rojo siete suites a la vez, y un candado que aparece rojo el día
+     * que se instala se desactiva antes de arreglarse. Cada sistema lo registra
+     * a mano al cerrar su Dockerfile; cuando los ocho estén, se mueve a `todos()`
+     * y esto se borra.
+     *
+     * @param  list<string>  $herramientas  lo que la cadena de build necesita sí o sí, además de lo que se deriva de los imports
+     * @param  list<string>  $soloDeEscritorio  paquetes que NO pueden estar en `dependencies`
+     */
+    public static function higieneDeLaEtapaDeAssets(
+        ?string $dockerfile = null,
+        ?string $packageJson = null,
+        ?string $packageLock = null,
+        array $herramientas = ['vite', 'laravel-vite-plugin'],
+        array $soloDeEscritorio = ['demo-engine'],
+        string $entradasJs = 'resources/js/*.js',
+    ): void {
+        (new HigieneDeLaEtapaDeAssets(
+            $dockerfile,
+            $packageJson,
+            $packageLock,
+            $herramientas,
+            $soloDeEscritorio,
+            $entradasJs,
+        ))->registrar();
     }
 }

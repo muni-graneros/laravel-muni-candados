@@ -6,6 +6,32 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 _Nada todavía._
 
+## [0.3.0] - 2026-09-06
+
+### Agregado
+
+- `higieneDeLaEtapaDeAssets`: la etapa `FROM node:… AS assets` del Dockerfile no
+  instala `devDependencies` ni ejecuta los `postinstall` de terceros dentro de la
+  imagen de producción, lo que necesita `vite build` está en `dependencies`, y
+  nada de lo que se instala en producción se resuelve fuera de
+  `registry.npmjs.org`. Nació en `rrhh-graneros` tras un incidente real —el
+  `postinstall` de `ffmpeg-static` se bajaba 70 MB desde GitHub durante el build,
+  y falló con un 407 detrás de un proxy— y se promovió al comprobar que los ocho
+  sistemas tienen la misma etapa y solo ese la vigilaba.
+- La lista de herramientas que exige en `dependencies` **se deriva de los
+  `import` reales** de `vite.config.js` y de los entrypoints de JS, no de una
+  lista escrita a mano: así sirve igual con Tailwind 3 y postcss que con Tailwind
+  4 y su plugin de Vite.
+
+### Qué NO hace todavía
+
+- **No está en `Candados::todos()`.** El día que se promovió lo cumplía uno solo
+  de los ocho sistemas; meterlo en `todos()` habría puesto siete suites en rojo a
+  la vez, y un candado que aparece rojo el día que se instala se desactiva antes
+  de arreglarse. Cada sistema lo registra a mano al cerrar su Dockerfile. Cuando
+  los ocho estén, se mueve a `todos()` — y ese cambio sí será una versión menor
+  con su aviso de qué se rompe.
+
 ## [0.2.1] - 2026-09-05
 
 ### Corregido

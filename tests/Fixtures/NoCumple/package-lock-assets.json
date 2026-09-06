@@ -1,0 +1,16 @@
+{
+    "lockfileVersion": 3,
+    "packages": {
+        "": {
+            "name": "sistema"
+        },
+        "node_modules/motion": {
+            "version": "13.1.0",
+            "resolved": "https://registry.npmjs.org/motion/-/motion-13.1.0.tgz"
+        },
+        "node_modules/demo-engine": {
+            "version": "1.12.0",
+            "resolved": "https://github.com/muni-graneros/demo-engine/archive/refs/tags/v1.12.0.tar.gz"
+        }
+    }
+}

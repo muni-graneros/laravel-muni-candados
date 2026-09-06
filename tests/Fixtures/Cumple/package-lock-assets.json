@@ -1,0 +1,17 @@
+{
+    "lockfileVersion": 3,
+    "packages": {
+        "": {
+            "name": "sistema"
+        },
+        "node_modules/vite": {
+            "version": "7.0.0",
+            "resolved": "https://registry.npmjs.org/vite/-/vite-7.0.0.tgz"
+        },
+        "node_modules/demo-engine": {
+            "version": "1.13.0",
+            "resolved": "https://github.com/muni-graneros/demo-engine/archive/refs/tags/v1.13.0.tar.gz",
+            "dev": true
+        }
+    }
+}
