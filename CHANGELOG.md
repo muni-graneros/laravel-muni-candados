@@ -4,6 +4,10 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
+_Nada todavía._
+
+## [0.4.0] - 2026-09-06
+
 ### Agregado
 
 - `sinCdnDeFuentesNiIconos`: el panel Filament resuelve su tipografía con
@@ -41,6 +45,21 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
   sin que nadie lo notara—, pero basta copiar dos líneas de `serviceWorker.register`
   de otro sistema para que el panel entero empiece a escribirse en el disco del equipo,
   donde queda tras cerrar sesión. En `personas-graneros` eso ya había pasado de verdad.
+
+### Qué se rompe al subir
+
+- **`pwaSinRestosDelScaffold` SÍ entra en `Candados::todos()`**, así que todo sistema
+  que suba a esta versión lo hereda sin escribir una línea. Medido hoy sobre los ocho:
+  siete pasan —cuatro no tienen `sw.js` y tres lo registran de verdad— y
+  **`seguridad-graneros` se pone en rojo**: tiene `public/sw.js` y
+  `public/manifest.webmanifest` y ninguna vista los registra. Ese rojo es correcto y es
+  el motivo del candado: un service worker que nadie registra hoy es inerte, pero está
+  servido y a dos líneas de que alguien lo active copiando un `serviceWorker.register`
+  de otro sistema — y entonces empieza a cachear el panel autenticado en el disco del
+  funcionario. El arreglo en `seguridad` es borrar los dos archivos, no silenciar el
+  candado.
+- `sinCdnDeFuentesNiIconos` **no** entra en `todos()` (ver arriba): quien lo quiera lo
+  registra a mano.
 
 ## [0.3.0] - 2026-09-06
 
