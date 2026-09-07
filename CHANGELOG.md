@@ -4,6 +4,10 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
+_Nada todavía._
+
+## [0.5.0] - 2026-09-07
+
 ### Arreglado
 
 - `pwaSinRestosDelScaffold` daba el mismo mensaje («Bórralo, o regístralo con
@@ -36,7 +40,6 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
     `licencias-graneros`, donde el worker sí se registra
     (`resources/views/partials/pwa.blade.php`), el candado sigue pasando sin
     cambios.
-
 ## [0.4.0] - 2026-09-06
 
 ### Agregado
