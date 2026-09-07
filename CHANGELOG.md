@@ -4,7 +4,38 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
-_Nada todavía._
+### Arreglado
+
+- `pwaSinRestosDelScaffold` daba el mismo mensaje («Bórralo, o regístralo con
+  su scope acotado si de verdad hace falta») a CUALQUIER `sw*.js` o
+  `manifest*.webmanifest` huérfano, sin distinguir el resto real del scaffold
+  de código construido a propósito al que solo le falta activarse. El
+  CHANGELOG de 0.4.0 (arriba) ya decía, sobre este mismo candado: «El arreglo
+  en `seguridad` es borrar los dos archivos» — y eso era un falso positivo:
+  `public/sw.js` en `seguridad-graneros` es la PWA de terreno del patrullero
+  (GPS, cola offline, botón de pánico), con
+  `tests/Feature/PwaPatrulleroTest.php` encima y dos auditorías de seguridad;
+  lo único que le faltaba era la línea de `serviceWorker.register()`. Un
+  agente que siguiera esa nota al pie de la letra habría tirado trabajo
+  probado.
+  - El candado ahora distingue los dos casos con evidencia: si el archivo
+    servido calza BYTE A BYTE (mismo SHA-256) con el que reparte
+    `scaffold-laravel-filament-pwa`, es certeza de que es el resto y el
+    mensaje sigue diciendo que se borra; si no calza pero existe una prueba
+    dedicada en `tests/` que lo ejercita, el mensaje dice que falta el
+    registro y **no** sugiere borrar nada; sin evidencia en ningún sentido,
+    el mensaje no empuja a ninguna de las dos acciones.
+  - `PwaSinRestosDelScaffold` (y `Candados::pwaSinRestosDelScaffold()`) suman
+    dos parámetros: `$tests` (dónde buscar la prueba dedicada, por omisión
+    `tests`) y `$excepciones` (`array<string, string>`, nombre de archivo =>
+    motivo escrito por el que se lo exime — una excepción sin motivo falla
+    pidiendo que se escriba por qué).
+  - Verificado contra los dos casos reales: en `seguridad-graneros`,
+    `public/sw.js` ahora falla con «No lo borres: registralo con
+    `navigator.serviceWorker.register('/sw.js')`…» en vez de «Bórralo»; en
+    `licencias-graneros`, donde el worker sí se registra
+    (`resources/views/partials/pwa.blade.php`), el candado sigue pasando sin
+    cambios.
 
 ## [0.4.0] - 2026-09-06
 

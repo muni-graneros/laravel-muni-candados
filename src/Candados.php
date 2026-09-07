@@ -53,12 +53,23 @@ final class Candados
     /**
      * No queda ningún service worker ni manifest servido que nadie registre.
      *
+     * Un huérfano puede ser el resto del scaffold (se borra) o código propio
+     * al que solo le falta activarse (no se borra): el candado distingue los
+     * dos casos por el hash del archivo y por si existe una prueba dedicada
+     * en `tests/`. Ver `PwaSinRestosDelScaffold` para el criterio completo.
+     *
      * @param  string|null  $publico  por omisión `public`
      * @param  string|null  $vistas  por omisión `resources/views`
+     * @param  string|null  $tests  por omisión `tests`
+     * @param  array<string, string>  $excepciones  nombre de archivo (p. ej. `sw.js`) => motivo escrito por el que se lo exime
      */
-    public static function pwaSinRestosDelScaffold(?string $publico = null, ?string $vistas = null): void
-    {
-        (new PwaSinRestosDelScaffold($publico, $vistas))->registrar();
+    public static function pwaSinRestosDelScaffold(
+        ?string $publico = null,
+        ?string $vistas = null,
+        ?string $tests = null,
+        array $excepciones = [],
+    ): void {
+        (new PwaSinRestosDelScaffold($publico, $vistas, $tests, $excepciones))->registrar();
     }
 
     /**
