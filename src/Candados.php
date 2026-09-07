@@ -103,16 +103,18 @@ final class Candados
      * @param  list<string>|null  $dsnAjenos  DSN que tienen que rechazarse
      * @param  list<string>|null  $dsnPropios  DSN que tienen que aceptarse
      * @param  list<string>|null  $dsnIlegibles  DSN que no se dan por buenos
+     * @param  list<string>|null  $candidatas  dónde buscar la clase si no se pasa `$clase`
      */
     public static function erroresNoSalenDelPais(
-        string $clase = 'App\\Support\\ReporteDeErrores',
+        ?string $clase = null,
         string $metodo = 'vaADestinoPropio',
         ?string $bootstrap = null,
         ?array $dsnAjenos = null,
         ?array $dsnPropios = null,
         ?array $dsnIlegibles = null,
+        ?array $candidatas = null,
     ): void {
-        (new ErroresNoSalenDelPais($clase, $metodo, $bootstrap, $dsnAjenos, $dsnPropios, $dsnIlegibles))->registrar();
+        (new ErroresNoSalenDelPais($clase, $metodo, $bootstrap, $dsnAjenos, $dsnPropios, $dsnIlegibles, $candidatas))->registrar();
     }
 
     /**

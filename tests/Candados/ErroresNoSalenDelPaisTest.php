@@ -75,3 +75,65 @@ it('falla claro si la clase que decide no existe', function () use ($fixtures): 
     expect(fn () => $candado->sinDsnNoSeEnganchaNada())
         ->toThrow(AssertionFailedError::class, 'no existe App\Support\NoExiste::vaADestinoPropio()');
 });
+
+/*
+ * La clase que decide se resuelve por lo que EXISTE, no por lo que se supone.
+ *
+ * El default apuntaba a `App\Support\ReporteDeErrores`, la copia local. En
+ * cuanto un sistema adoptaba la del paquete y borraba la suya, `Candados::todos()`
+ * fallaba señalando una clase recién borrada, y el sistema tenía que dejar de
+ * usar `todos()` y registrar los ocho candados a mano — lo contrario de lo que
+ * promete este paquete. Pasó de verdad al adoptar en `rrhh-graneros`.
+ */
+it('prefiere la clase local cuando el sistema todavía tiene la suya', function (): void {
+    $candado = new ErroresNoSalenDelPais(candidatas: [
+        ClaseQueDecideLocal::class,
+        ClaseQueDecideDelPaquete::class,
+    ]);
+
+    expect($candado->claseQueDecide())->toBe(ClaseQueDecideLocal::class);
+});
+
+it('cae en la del paquete cuando el sistema ya borró la suya', function (): void {
+    $candado = new ErroresNoSalenDelPais(candidatas: [
+        'App\\Support\\QueNoExisteEnNingunLado',
+        ClaseQueDecideDelPaquete::class,
+    ]);
+
+    expect($candado->claseQueDecide())->toBe(ClaseQueDecideDelPaquete::class);
+});
+
+it('falla nombrando las dos cuando no existe ninguna', function (): void {
+    $candado = new ErroresNoSalenDelPais(candidatas: [
+        'App\\Support\\QueNoExisteEnNingunLado',
+        'Muni\\Shared\\Errores\\TampocoExiste',
+    ]);
+
+    expect(fn () => $candado->claseQueDecide())
+        ->toThrow(AssertionFailedError::class, 'Se buscó: App\\Support\\QueNoExisteEnNingunLado');
+});
+
+it('una clase pasada a mano gana sobre la resolución automática', function (): void {
+    $candado = new ErroresNoSalenDelPais(
+        clase: ClaseQueDecideDelPaquete::class,
+        candidatas: [ClaseQueDecideLocal::class],
+    );
+
+    expect($candado->claseQueDecide())->toBe(ClaseQueDecideDelPaquete::class);
+});
+
+class ClaseQueDecideLocal
+{
+    public static function vaADestinoPropio(): bool
+    {
+        return true;
+    }
+}
+
+class ClaseQueDecideDelPaquete
+{
+    public static function vaADestinoPropio(): bool
+    {
+        return true;
+    }
+}

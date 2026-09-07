@@ -6,6 +6,42 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 _Nada todavía._
 
+## [0.5.2] - 2026-09-07
+
+> **La `v0.5.1` no existe como versión: apunta al mismo commit que la `v0.5.0`.**
+> El tag se empujó por error —un `git tag` quedó fuera del encadenado y corrió
+> aunque el commit se hubiera cancelado por PHPStan—. No se borra del remoto,
+> porque reescribir un tag ya publicado es peor que dejarlo: quien resuelva
+> `^0.5` va a tomar esta, que sí trae el arreglo.
+
+
+### Arreglado
+
+- `erroresNoSalenDelPais` tenía como valor por omisión la clase LOCAL
+  (`App\Support\ReporteDeErrores`). En cuanto un sistema adoptaba
+  `Muni\Shared\Errores\ReporteDeErrores` y borraba la suya, `Candados::todos()`
+  fallaba señalando una clase recién borrada, y ese sistema tenía que **dejar de
+  usar `todos()`** y registrar los ocho candados a mano — lo contrario de lo que
+  promete este paquete. Pasó de verdad al adoptar en `rrhh-graneros` y en
+  `feria-graneros`.
+  - Ahora la clase se resuelve **por lo que existe**: primero la local (el
+    sistema que todavía tiene la suya manda), después la del paquete. Si no
+    existe ninguna, falla nombrando las dos. Pasar `clase:` a mano sigue
+    ganando sobre todo.
+
+### Al adoptar, ojo con esto (no es del paquete, es de Laravel)
+
+- **Borrar `ActivityPolicy` y `OnboardingTourPolicy` las deja sin dueño.** El
+  adivinador de políticas de Laravel busca `App\Policies\{Modelo}Policy`; para
+  un modelo de un vendor —`Spatie\Activitylog\Models\Activity`— eso solo
+  funciona mientras el archivo local exista. Al adoptar hay dos salidas
+  probadas: dejar la clase local como **fachada** que extiende la del paquete
+  (lo que hizo `rrhh-graneros`), o borrarla y registrar la del paquete con un
+  `Gate::policy()` explícito en el `AppServiceProvider` (lo que hizo
+  `feria-graneros`). Lo que NO funciona es borrarla y confiar en la convención.
+  La `RolePolicy` es aparte y más estricta: `filament-shield` la busca por ruta
+  hardcodeada, así que ahí la fachada es obligatoria.
+
 ## [0.5.0] - 2026-09-07
 
 ### Arreglado

@@ -67,14 +67,65 @@ final class ErroresNoSalenDelPais extends Candado
      * @param  list<string>|null  $dsnPropios
      * @param  list<string>|null  $dsnIlegibles
      */
+    /**
+     * Dónde se busca la clase que decide, en orden, cuando no se pasa una.
+     *
+     * Primero la local: un sistema que todavía tiene la suya manda sobre el
+     * paquete. Después la del paquete, para el que ya la adoptó y borró la
+     * propia. Sin esto, `Candados::todos()` se rompía justo al adoptar —el
+     * default apuntaba a una clase recién borrada— y el sistema tenía que dejar
+     * de usar `todos()` y registrar los ocho candados a mano, que es lo contrario
+     * de lo que promete este paquete.
+     *
+     * @var list<string>
+     */
+    public const array CLASES_CANDIDATAS = [
+        'App\\Support\\ReporteDeErrores',
+        'Muni\\Shared\\Errores\\ReporteDeErrores',
+    ];
+
+    /**
+     * @param  list<string>|null  $dsnAjenos
+     * @param  list<string>|null  $dsnPropios
+     * @param  list<string>|null  $dsnIlegibles
+     * @param  list<string>|null  $candidatas  dónde buscar si no se pasa `$clase`
+     */
     public function __construct(
-        private readonly string $clase = 'App\\Support\\ReporteDeErrores',
+        private readonly ?string $clase = null,
         private readonly string $metodo = 'vaADestinoPropio',
         private readonly ?string $bootstrap = null,
         private readonly ?array $dsnAjenos = null,
         private readonly ?array $dsnPropios = null,
         private readonly ?array $dsnIlegibles = null,
+        private readonly ?array $candidatas = null,
     ) {}
+
+    /**
+     * La clase que decide a dónde van las trazas en ESTE sistema.
+     *
+     * Si no se pasó una, se resuelve por lo que exista, no por lo que se
+     * supone. Si no existe ninguna, falla nombrando las dos: el sistema que
+     * la tenga en otro lado la pasa con `clase:`.
+     */
+    public function claseQueDecide(): string
+    {
+        if ($this->clase !== null) {
+            return $this->clase;
+        }
+
+        $candidatas = $this->candidatas ?? self::CLASES_CANDIDATAS;
+
+        foreach ($candidatas as $candidata) {
+            if (class_exists($candidata)) {
+                return $candidata;
+            }
+        }
+
+        Assert::fail(
+            'no existe ninguna clase que decida a dónde van las trazas de este sistema. Se buscó: '
+            .implode(', ', $candidatas).'. Si la tuya vive en otro lado, pasala con «clase:»'
+        );
+    }
 
     public function registrar(): void
     {
@@ -158,22 +209,24 @@ final class ErroresNoSalenDelPais extends Candado
      */
     private function llamada(): string
     {
-        $partes = explode('\\', $this->clase);
+        $partes = explode('\\', $this->claseQueDecide());
 
         return (string) end($partes).'::'.$this->metodo.'()';
     }
 
     private function vaADestinoPropio(): bool
     {
-        $evaluador = [$this->clase, $this->metodo];
+        $clase = $this->claseQueDecide();
+
+        $evaluador = [$clase, $this->metodo];
 
         if (! is_callable($evaluador)) {
-            Assert::fail("no existe {$this->clase}::{$this->metodo}(): nadie decide a dónde van las trazas de este sistema");
+            Assert::fail("no existe {$clase}::{$this->metodo}(): nadie decide a dónde van las trazas de este sistema");
         }
 
         $resultado = $evaluador();
 
-        Assert::assertIsBool($resultado, "{$this->clase}::{$this->metodo}() tiene que devolver un bool");
+        Assert::assertIsBool($resultado, "{$clase}::{$this->metodo}() tiene que devolver un bool");
 
         return $resultado;
     }
