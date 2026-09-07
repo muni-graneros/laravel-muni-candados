@@ -18,10 +18,17 @@ paquete la regla vive una vez y cada sistema la hereda con una línea.
 
 ## Cómo se adopta
 
-> Publicado el 05-09-2026 como `v0.1.0` en
-> `git@github-graneros:muni-graneros/laravel-muni-candados.git`. El repositorio
-> es privado, así que la entrada `vcs` va con `"no-api": true`: sin eso Composer
-> resuelve por la API de GitHub y pide un token personal.
+> Publicado en `muni-graneros/laravel-muni-candados`. El repositorio es privado,
+> así que la entrada `vcs` va con `"no-api": true`: sin eso Composer resuelve por
+> la API de GitHub y pide un token personal.
+>
+> **La URL va en `https://`, no con el alias SSH.** Poner
+> `git@github-graneros:…` funciona en el equipo de César —el alias vive en su
+> `~/.ssh/config`— y **rompe el CI**, donde `composer install` muere con
+> «Could not resolve hostname github-graneros» antes de instalar nada. Con la URL
+> `https://` el `insteadOf` del equipo la reescribe a SSH igual, y el CI puede
+> autenticarse con su propia credencial. Es la forma que ya usan `muni-shared` y
+> `muni-ui` en los nueve sistemas.
 
 En el `composer.json` del sistema:
 
@@ -30,7 +37,7 @@ En el `composer.json` del sistema:
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github-graneros:muni-graneros/laravel-muni-candados.git",
+            "url": "https://github.com/muni-graneros/laravel-muni-candados.git",
             "no-api": true
         }
     ]
