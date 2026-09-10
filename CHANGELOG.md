@@ -6,6 +6,45 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 _Nada todavía._
 
+## [0.6.0] - 2026-09-10
+
+### Agregado
+
+- `ningunResourceSinAutorizacion`: ningún Resource de Filament queda sin
+  autorización real. Cierra la clase de agujero que ya
+  mordió tres veces (`control-acceso`, `discapacidad`, `licencias`) y volvió a
+  aparecer con `OnboardingTourPolicy` al adoptar el paquete compartido —
+  `Gate::guessPolicyName()` solo adivina `App\Policies\*` para modelos que
+  viven en `App\Models`, y para un modelo de un vendor
+  (`Spatie\Activitylog\Models\Activity`, o un modelo de `muni-shared`) nunca
+  encuentra nada. Sin modo estricto (ninguno de los nueve sistemas lo
+  configura), la ausencia de policy resuelve en `Response::allow()`
+  (`vendor/filament/filament/src/helpers.php`, `get_authorization_response()`):
+  el archivo de la policy puede existir, su test unitario puede pasar, y la
+  autorización real nunca lo consulta.
+  - Barrido automático, sin lista que nadie mantenga: recorre
+    `Filament::getPanels()` y por cada Resource exige que
+    `Gate::getPolicyFor($resource::getModel())` resuelva algo, o que el propio
+    Resource sobreescriba `canViewAny()` (comprobado con
+    `ReflectionMethod::getDeclaringClass()`, para no marcar en rojo a quien
+    autoriza a mano y a propósito).
+  - Lista explícita opcional (`politicasExactas`, modelo => policy) para fijar
+    la clase exacta que un modelo puntual tiene que resolver, más allá del
+    barrido general — mismo patrón que `herramientas:` en
+    `higienieDeLaEtapaDeAssets` y `clase:` en `erroresNoSalenDelPais`.
+
+### Qué NO hace todavía
+
+- **No está en `Candados::todos()`.** No hay medición de cuántos de los nueve
+  sistemas tienen hoy algún Resource sobre un modelo de paquete sin
+  `Gate::policy()` explícito — es exactamente el hueco que este candado busca,
+  así que es probable que aparezca en varios a la vez. Meterlo en `todos()` a
+  ciegas podría poner varias suites en rojo de golpe, lo mismo que pasó con
+  `higieneDeLaEtapaDeAssets` y con `sinCdnDeFuentesNiIconos`. Cada sistema lo
+  registra a mano con `Candados::ningunResourceSinAutorizacion()` en su
+  `tests/Feature/CandadosTest.php` hasta que se mida la adopción real; cuando
+  se mida, se decide si se mueve a `todos()`.
+
 ## [0.5.2] - 2026-09-07
 
 > **La `v0.5.1` no existe como versión: apunta al mismo commit que la `v0.5.0`.**

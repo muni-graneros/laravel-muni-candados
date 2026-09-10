@@ -12,6 +12,7 @@ use Muni\Candados\Candados\GuardaDeCredencialesDePlantilla;
 use Muni\Candados\Candados\HigieneDeLaEtapaDeAssets;
 use Muni\Candados\Candados\ImagenDeProduccion;
 use Muni\Candados\Candados\NadieEmiteCookieDeRecordar;
+use Muni\Candados\Candados\NingunResourceSinAutorizacion;
 use Muni\Candados\Candados\ProxiesDeConfianza;
 use Muni\Candados\Candados\PwaSinRestosDelScaffold;
 use Muni\Candados\Candados\SeedersSinCredencialesEnProduccion;
@@ -243,5 +244,23 @@ final class Candados
         ?string $recursos = null,
     ): void {
         (new SinCdnDeFuentesNiIconos($idDelPanel, $ruta, $recursos))->registrar();
+    }
+
+    /**
+     * Ningún Resource de Filament queda sin autorización real.
+     *
+     * **No está en `todos()` todavía, a propósito.** Nació (10-09) del hallazgo
+     * de `OnboardingTourPolicy` sin engancharse al adoptar `muni-shared`: no hay
+     * medición de cuántos de los nueve sistemas tienen hoy algún Resource sobre
+     * un modelo de paquete sin `Gate::policy()` explícito, y es justo el hueco
+     * que este candado busca — meterlo a ciegas podría poner varias suites en
+     * rojo de golpe. Cada sistema lo registra a mano. Cuando se mida la
+     * adopción real, se decide si se mueve a `todos()`.
+     *
+     * @param  array<class-string, class-string>  $politicasExactas  modelo => policy que TIENE que resolver, además del barrido general
+     */
+    public static function ningunResourceSinAutorizacion(array $politicasExactas = []): void
+    {
+        (new NingunResourceSinAutorizacion($politicasExactas))->registrar();
     }
 }
