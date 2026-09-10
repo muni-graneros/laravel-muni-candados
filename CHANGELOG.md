@@ -4,7 +4,35 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
-_Nada todavía._
+### Arreglado
+
+- `pwaSinRestosDelScaffold`: el subtest «cada service worker registrado existe
+  en public/» —y, por la misma forma, «no se sirve ningún service worker que
+  nadie registre» y «no se sirve ningún manifest que nadie enlace»— corrían
+  con **cero aserciones** cuando el sistema no tiene ningún artefacto de PWA:
+  el `foreach` no itera, PHPUnit marca el test *risky*, y un candado mudo ante
+  el caso vacío es indistinguible de uno que pasa por buenas razones. Medido
+  el 2026-09-10 en `seguridad-graneros`, `control-acceso-graneros` y
+  `rrhh-graneros`: los tres en verde, pero risky. Es el mismo mecanismo que ya
+  dejó pasar un incidente real con `public/sw.js` en `seguridad-graneros`
+  (`v0.5.0`). Las tres comprobaciones ahora dejan constancia siempre, incluso
+  sobre la lista vacía; el caso sin PWA sigue pasando igual que antes —el
+  candado no empieza a exigir que exista una— y el caso con service worker
+  sigue fallando igual si el archivo no existe en `public/` (verificado por
+  mutación).
+- `seedersSinCredencialesEnProduccion`: el mismo hueco en
+  «la guardia de entorno va antes de la primera contraseña» — un sistema sin
+  ningún seeder que llame `Hash::make(` (legítimo: no todos siembran
+  credenciales de demo) dejaba ese subtest sin ninguna aserción real. Misma
+  forma, mismo arreglo: se afirma incondicionalmente después del recorrido,
+  no adentro del `foreach`.
+
+**Para quien actualice:** ningún sistema que hoy pasa se pone en rojo por
+esto — el comportamiento observable no cambia, solo deja de haber
+comprobaciones *risky* silenciosas en los sistemas sin PWA o sin seeder de
+credenciales. Si tu suite corre con `--strict` (`beStrictAboutTestsThatDoNotTestAnything`),
+vas a ver desaparecer los *risky* de estos dos candados; si no lo corrías con
+`--strict`, no vas a notar ningún cambio de resultado.
 
 ## [0.6.0] - 2026-09-10
 

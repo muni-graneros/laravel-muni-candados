@@ -107,7 +107,13 @@ final class PwaSinRestosDelScaffold extends Candado
         // esa línea de registro (ver `evaluarArchivoSinUso`).
         $vistas = $this->textoDeLasVistas();
 
-        foreach ($this->archivos('sw*.js') as $ruta) {
+        $archivos = $this->archivos('sw*.js');
+
+        if ($this->dejarConstanciaSiNoHayNadaQueRevisar($archivos, 'sw*.js')) {
+            return;
+        }
+
+        foreach ($archivos as $ruta) {
             $nombre = basename($ruta);
 
             $this->evaluarArchivoSinUso(
@@ -129,7 +135,13 @@ final class PwaSinRestosDelScaffold extends Candado
         // pedirlo y leer una afirmación equivocada sobre qué es este sistema.
         $vistas = $this->textoDeLasVistas();
 
-        foreach ($this->archivos('manifest*.webmanifest') as $ruta) {
+        $archivos = $this->archivos('manifest*.webmanifest');
+
+        if ($this->dejarConstanciaSiNoHayNadaQueRevisar($archivos, 'manifest*.webmanifest')) {
+            return;
+        }
+
+        foreach ($archivos as $ruta) {
             $nombre = basename($ruta);
 
             $this->evaluarArchivoSinUso(
@@ -228,13 +240,31 @@ final class PwaSinRestosDelScaffold extends Candado
             $encontrados
         );
 
-        foreach (array_unique($encontrados[1]) as $registrado) {
-            Assert::assertFileExists(
-                $this->rutaPublica(ltrim($registrado, '/')),
-                "una vista registra «{$registrado}» y ese archivo no existe en public/: ".
+        $registrados = array_unique($encontrados[1]);
+
+        // Que ninguna vista registre un service worker es un estado legítimo
+        // (no todo sistema tiene PWA), pero antes esta comprobación quedaba
+        // muda ante ese caso: cero iteraciones, cero aserciones, y PHPUnit la
+        // marca «risky» —no verde por haber revisado, verde por no haber
+        // revisado nada—. Es el mismo mecanismo que una vez dejó pasar un
+        // docblock afirmando en falso que `public/sw.js` se había borrado en
+        // seguridad-graneros: un candado callado ante lo vacío es
+        // indistinguible de uno que pasa por buenas razones. Por eso la
+        // aserción corre siempre, incluso sobre la lista vacía: deja
+        // constancia de que SE REVISÓ, en vez de silencio.
+        $faltantes = array_values(array_filter(
+            $registrados,
+            fn (string $registrado): bool => ! is_file($this->rutaPublica(ltrim($registrado, '/')))
+        ));
+
+        Assert::assertSame(
+            [],
+            $faltantes,
+            $registrados === []
+                ? 'no hay ningún registro de service worker en las vistas: nada que verificar contra public/.'
+                : 'una vista registra un service worker que no existe en public/ ('.implode(', ', $faltantes).'): '.
                 'el registro falla en silencio y la app no funciona sin red.'
-            );
-        }
+        );
     }
 
     /**
@@ -245,6 +275,32 @@ final class PwaSinRestosDelScaffold extends Candado
     private function archivos(string $patron): array
     {
         return glob($this->rutaPublica($patron)) ?: [];
+    }
+
+    /**
+     * No tener ningún archivo que calce con el patrón es un estado legítimo
+     * —no todo sistema tiene PWA—, pero sin esto el `foreach` de quien llama
+     * corre cero veces y la comprobación queda muda: PHPUnit la marca
+     * «risky» y, peor, un candado callado ante lo vacío es indistinguible de
+     * uno que pasa por buenas razones. Se deja constancia con una aserción
+     * real (aunque trivial) de que se revisó y no había nada, y se le avisa
+     * a quien llama que no hay nada más que recorrer.
+     *
+     * @param  list<string>  $archivos
+     */
+    private function dejarConstanciaSiNoHayNadaQueRevisar(array $archivos, string $patron): bool
+    {
+        if ($archivos !== []) {
+            return false;
+        }
+
+        Assert::assertSame(
+            [],
+            $archivos,
+            "no se sirve ningún archivo «{$patron}» en public/: nada que revisar."
+        );
+
+        return true;
     }
 
     private function rutaPublica(string $relativa = ''): string

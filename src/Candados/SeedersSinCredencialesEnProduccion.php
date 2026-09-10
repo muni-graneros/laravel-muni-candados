@@ -78,6 +78,8 @@ final class SeedersSinCredencialesEnProduccion extends Candado
         // cómo se escriba —un `return` temprano o un `if` que llama a un método
         // privado—, lo que no vale es preguntar por el entorno después de haber
         // sembrado.
+        $tardias = [];
+
         foreach ($this->seeders() as $archivo) {
             $codigo = $archivo->getContents();
 
@@ -89,12 +91,23 @@ final class SeedersSinCredencialesEnProduccion extends Candado
 
             $guardia = $this->posicionDeLaGuardia($codigo) ?? PHP_INT_MAX;
 
-            Assert::assertLessThan(
-                $primeraClave,
-                $guardia,
-                $archivo->getFilename().': siembra una contraseña antes de mirar el entorno'
-            );
+            if ($guardia < $primeraClave) {
+                continue;
+            }
+
+            $tardias[] = $archivo->getFilename().': siembra una contraseña antes de mirar el entorno';
         }
+
+        // Que ningún seeder siembre credenciales (self::SIEMBRA) es un estado
+        // legítimo —no todo sistema tiene un seeder de demo—, pero antes esta
+        // aserción vivía DENTRO del bucle, gateada por archivo: sin ningún
+        // seeder que use Hash::make, el bucle corría cero veces y el test
+        // quedaba sin ninguna comprobación real. PHPUnit lo marca «risky», que
+        // es indistinguible de un candado que pasa por buenas razones —el
+        // mismo hueco que dejó pasar una vez el incidente de `public/sw.js` en
+        // seguridad-graneros (ver PwaSinRestosDelScaffold)—. Por eso la
+        // aserción corre siempre, incondicional después del bucle.
+        Assert::assertSame([], $tardias, implode("\n", $tardias));
     }
 
     /**

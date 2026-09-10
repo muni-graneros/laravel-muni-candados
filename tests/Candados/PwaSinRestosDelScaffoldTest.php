@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Muni\Candados\Candados\PwaSinRestosDelScaffold;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\AssertionFailedError;
 
 $fixtures = dirname(__DIR__).'/Fixtures';
@@ -143,4 +144,56 @@ it('una excepción sin motivo no exime nada: falla pidiendo que se escriba por q
 
     expect(fn () => $sinMotivo->noSeSirveNingunServiceWorkerQueNadieRegistre())
         ->toThrow(AssertionFailedError::class, 'no trae motivo');
+});
+
+/*
+ * El hueco estructural que este candado dejó pasar una vez (2026-09-10): un
+ * sistema sin ningún artefacto de PWA —caso legítimo, control-acceso-graneros
+ * no tiene una— hacía correr los tres bucles cero veces, y las tres
+ * comprobaciones quedaban sin ninguna aserción real. PHPUnit las marca
+ * «risky», que es indistinguible de un candado que pasa por buenas razones:
+ * si mañana alguien suma una PWA y rompe algo, nadie nota que el candado
+ * seguía mudo. Se verifica con Assert::getCount(): las tres tienen que dejar
+ * constancia real, no solo no lanzar.
+ */
+it('un sistema sin ningún artefacto de PWA deja constancia de que se revisó, no un candado mudo', function (): void {
+    $public = sys_get_temp_dir().'/pwa-vacio-public-'.uniqid();
+    $vistas = sys_get_temp_dir().'/pwa-vacio-vistas-'.uniqid();
+
+    mkdir($public);
+    mkdir($vistas);
+    file_put_contents($vistas.'/app.blade.php', '<html>sin ningún rastro de PWA</html>');
+
+    $sinPwa = new PwaSinRestosDelScaffold($public, $vistas);
+
+    try {
+        $antes = Assert::getCount();
+
+        $sinPwa->noSeSirveNingunServiceWorkerQueNadieRegistre();
+        expect(Assert::getCount())->toBeGreaterThan(
+            $antes,
+            'sin sw*.js en public/, la comprobación no dejó ninguna aserción: vuelve a quedar muda ante el caso vacío'
+        );
+
+        $antes = Assert::getCount();
+
+        $sinPwa->noSeSirveNingunManifestQueNadieEnlace();
+        expect(Assert::getCount())->toBeGreaterThan(
+            $antes,
+            'sin manifest*.webmanifest en public/, la comprobación no dejó ninguna aserción: vuelve a quedar muda ante el caso vacío'
+        );
+
+        $antes = Assert::getCount();
+
+        $sinPwa->cadaServiceWorkerRegistradoExiste();
+        expect(Assert::getCount())->toBeGreaterThan(
+            $antes,
+            'sin ninguna vista que registre un service worker, la comprobación no dejó ninguna aserción: '.
+            'vuelve a quedar muda ante el caso vacío'
+        );
+    } finally {
+        unlink($vistas.'/app.blade.php');
+        rmdir($vistas);
+        rmdir($public);
+    }
 });
