@@ -2,7 +2,7 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado semántico.
 
-## [Sin publicar]
+## [0.6.1] - 2026-09-11
 
 ### Arreglado
 
