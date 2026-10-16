@@ -63,6 +63,13 @@ final class GuardaDeCredencialesDePlantilla extends Candado
      * `^1.18` y tener 1.19 instalado (o al revés, con el lock atrasado), y una
      * comprobación de clase cargada depende de qué autoload corrió antes en el
      * proceso. El archivo es el hecho.
+     *
+     * Una rama instalada con alias (`dev-feature/x as 1.22.0`, lo que hay en los
+     * sistemas mientras una versión no está etiquetada) aparece en
+     * `installed.json` con el nombre de la rama, que no se compara con nada; el
+     * alias que Composer resolvió queda en `installed.php` y cuenta como la
+     * versión que dice ser. Una rama SIN alias sigue sin contar: no promete
+     * ninguna versión.
      */
     public function laGuardaEstaInstalada(): void
     {
@@ -96,12 +103,55 @@ final class GuardaDeCredencialesDePlantilla extends Candado
             .'requiere pero no está instalado, así que la guarda de credenciales de plantilla no existe'
         );
 
+        $aliases = $this->aliasesInstalados(dirname($instalado).'/installed.php');
+
         Assert::assertTrue(
-            version_compare($version, self::PRIMERA_CON_GUARDA, '>='),
-            'está instalada la versión '.$version.' de '.self::PAQUETE.', y la guarda de credenciales '
-            .'de plantilla nace en la '.self::PRIMERA_CON_GUARDA.'. Subí el paquete: hasta entonces el '
-            .'sistema arranca en producción con la contraseña del .env.example y nada avisa'
+            array_any(
+                [$version, ...$aliases],
+                fn (string $candidata): bool => version_compare($candidata, self::PRIMERA_CON_GUARDA, '>='),
+            ),
+            'está instalada la versión '.$version.' de '.self::PAQUETE
+            .($aliases === [] ? '' : ' (alias: '.implode(', ', $aliases).')')
+            .', y la guarda de credenciales de plantilla nace en la '.self::PRIMERA_CON_GUARDA
+            .'. Subí el paquete: hasta entonces el sistema arranca en producción con la contraseña '
+            .'del .env.example y nada avisa'
         );
+    }
+
+    /**
+     * Los alias de versión con que Composer instaló el paquete, tal como los
+     * deja en `vendor/composer/installed.php` (`versions.<paquete>.aliases`).
+     * Sin el archivo, o sin el paquete en él, no hay alias.
+     *
+     * @return list<string>
+     */
+    private function aliasesInstalados(string $ruta): array
+    {
+        if (! is_file($ruta)) {
+            return [];
+        }
+
+        $datos = include $ruta;
+
+        if (! is_array($datos)) {
+            return [];
+        }
+
+        $aliases = $datos['versions'][self::PAQUETE]['aliases'] ?? [];
+
+        if (! is_array($aliases)) {
+            return [];
+        }
+
+        $limpios = [];
+
+        foreach ($aliases as $alias) {
+            if (is_string($alias) && $alias !== '') {
+                $limpios[] = ltrim($alias, 'v');
+            }
+        }
+
+        return $limpios;
     }
 
     public function elPaqueteEstaRequerido(): void

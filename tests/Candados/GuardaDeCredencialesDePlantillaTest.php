@@ -19,6 +19,23 @@ it('pasa cuando la versión instalada del paquete ya trae la guarda', function (
     $cumple->laGuardaEstaInstalada();
 });
 
+it('pasa cuando lo instalado es una rama del paquete con un alias de versión que ya trae la guarda', function () use ($fixtures): void {
+    // Lo que hay en los sistemas mientras laravel-muni-shared 1.22.0 no está
+    // etiquetada: `dev-feature/segundo-factor-muni-mfa as 1.22.0`. En
+    // installed.json la versión es la de la rama (no se compara con nada); el
+    // alias que Composer resolvió queda en installed.php.
+    $conAlias = new GuardaDeCredencialesDePlantilla($fixtures.'/CumpleConAlias/composer.json');
+
+    $conAlias->laGuardaEstaInstalada();
+});
+
+it('una rama sin alias no cuenta como versión con la guarda', function () use ($fixtures): void {
+    $sinAlias = new GuardaDeCredencialesDePlantilla($fixtures.'/NoCumpleRamaSinAlias/composer.json');
+
+    expect(fn () => $sinAlias->laGuardaEstaInstalada())
+        ->toThrow(AssertionFailedError::class, 'está instalada la versión dev-feature/sin-alias');
+});
+
 it('detecta el sistema que promete el paquete pero tiene instalada una versión sin la guarda', function () use ($noCumple): void {
     // El caso que motivó esta comprobación: `composer.json` con `^1.18` pasa las
     // otras dos y la guarda no existe, porque nace en la 1.19.0.

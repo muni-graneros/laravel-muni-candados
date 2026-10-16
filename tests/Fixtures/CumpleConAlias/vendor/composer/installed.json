@@ -1,0 +1,10 @@
+{
+    "packages": [
+        {
+            "name": "muni-graneros/laravel-muni-shared",
+            "version": "dev-feature/segundo-factor-muni-mfa",
+            "version_normalized": "dev-feature/segundo-factor-muni-mfa"
+        }
+    ],
+    "dev": true
+}

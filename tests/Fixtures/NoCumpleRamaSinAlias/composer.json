@@ -1,0 +1,17 @@
+{
+    "name": "muni-graneros/sistema-de-mentira-rama-sin-alias",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^13.0",
+        "muni-graneros/laravel-muni-shared": "dev-feature/sin-alias"
+    },
+    "require-dev": {
+        "muni-graneros/laravel-muni-candados": "^0.6"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    }
+}

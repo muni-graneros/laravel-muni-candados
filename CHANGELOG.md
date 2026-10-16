@@ -4,6 +4,18 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es/1.1.0/). Versionado se
 
 ## [Sin publicar]
 
+### Arreglado
+
+- `guardaDeCredencialesDePlantilla`: «la guarda existe de verdad en el vendor
+  instalado» fallaba en todo sistema que instala `laravel-muni-shared` como
+  rama con alias (`dev-feature/segundo-factor-muni-mfa as 1.22.0`, lo que
+  exige laravel-muni-mfa mientras 1.22.0 no está etiquetada): `installed.json`
+  trae el nombre de la rama, que `version_compare` no entiende, y el alias que
+  Composer resolvió queda solo en `installed.php`. Ahora cuenta también ese
+  alias (`versions.<paquete>.aliases`). Una rama SIN alias sigue sin pasar:
+  no promete ninguna versión. Fixtures nuevas `CumpleConAlias` y
+  `NoCumpleRamaSinAlias`.
+
 ### Seguridad
 
 - `filament/filament` (require-dev) con piso `^5.10` (antes `^5.0`): la suite del paquete se prueba contra la versión corregida de las cuatro advisories del 2026-10-08 (GHSA-6p72-cx74-63f5, GHSA-jpwg-8rw9-v3jj, GHSA-q2ph-j76w-c7qx y GHSA-9g92-9qj5-cqjc). No cambia lo que exige a quien lo instala: Filament sigue siendo opcional.
